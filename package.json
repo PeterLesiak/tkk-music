@@ -1,0 +1,12 @@
+{
+  "name": "@tkk-music/root",
+  "type": "module",
+  "scripts": {
+    "mobile:start": "pnpm --filter=@tkk-music/mobile start",
+    "format": "prettier . --write"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
+  }
+}
