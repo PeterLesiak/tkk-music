@@ -1,98 +1,149 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Defs, RadialGradient, Rect, Stop, Svg } from 'react-native-svg';
+import { BadgeCheckIcon, UserRoundPenIcon } from 'lucide-react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spinner } from '~/components/spinner';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function Home() {
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.body}>
+      <View style={StyleSheet.absoluteFill}>
+        <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <RadialGradient id="blob1" cx="25%" cy="10%" r="60%">
+              <Stop offset="0" stopColor="#8b5cf6" stopOpacity="0.3" />
+              <Stop offset="1" stopColor="#8b5cf6" stopOpacity="0" />
+            </RadialGradient>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+            <RadialGradient id="blob2" cx="80%" cy="30%" r="70%">
+              <Stop offset="0" stopColor="#3b82f6" stopOpacity="0.2" />
+              <Stop offset="1" stopColor="#3b82f6" stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <Rect x="0" y="0" width="100%" height="100%" fill="url(#blob1)" />
+          <Rect x="0" y="0" width="100%" height="100%" fill="url(#blob2)" />
+        </Svg>
+      </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <View style={styles.container}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>P</Text>
+        </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <View style={styles.username}>
+          <Text style={styles.usernameText}>Piotr Lesiak</Text>
+          <BadgeCheckIcon fill="#f4ec22" size={28} style={{ marginTop: 2 }} />
+        </View>
+
+        <View style={styles.mainContent}>
+          <Text style={styles.inputLabel}>Customize Your Profile Name</Text>
+
+          <View style={styles.inputWrapper}>
+            <UserRoundPenIcon
+              color="#94a3b8"
+              size={20}
+              style={styles.inputIconLeft}
+            />
+
+            <TextInput
+              value="Piotr Lesiak"
+              placeholder="Enter your name"
+              placeholderTextColor="#475569"
+              autoCorrect={false}
+              style={styles.input}
+            />
+
+            <Spinner style={styles.inputIconRight} />
+          </View>
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  body: {
+    flex: 1,
+    backgroundColor: '#0f0f0f',
+  },
+
   container: {
     flex: 1,
+    zIndex: 1,
+    position: 'relative',
+    marginTop: 180,
+    borderRadius: 38,
+    backgroundColor: '#2f2f2f',
+  },
+
+  avatar: {
+    width: 82,
+    height: 82,
+    position: 'absolute',
+    top: -41,
+    left: '50%',
+    transform: [{ translateX: '-50%' }],
+    display: 'flex',
+    alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: '50%',
+    borderColor: '#000000',
+    borderWidth: 1.5,
+    backgroundColor: '#ef6c00',
+  },
+  avatarText: {
+    color: '#ffffff',
+    fontSize: 36,
+    fontWeight: '500',
+  },
+
+  username: {
+    marginTop: 60,
+    marginInline: 'auto',
+    display: 'flex',
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    gap: 8,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  usernameText: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+
+  mainContent: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    paddingTop: 48,
+    paddingInline: 16,
   },
-  title: {
-    textAlign: 'center',
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#cbd5e1',
+    marginBottom: 12,
+    marginLeft: 4,
   },
-  code: {
-    textTransform: 'uppercase',
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderWidth: 1,
+    borderColor: '#334155',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 56,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  inputIconLeft: {
+    marginRight: 12,
+  },
+  inputIconRight: {
+    marginLeft: 12,
+  },
+  input: {
+    flex: 1,
+    color: '#ffffff',
+    fontSize: 16,
+    height: '100%',
   },
 });
