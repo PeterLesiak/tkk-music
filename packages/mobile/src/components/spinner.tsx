@@ -9,6 +9,8 @@ import {
 } from 'react-native-reanimated';
 import { LoaderCircleIcon, type LucideIcon } from 'lucide-react-native';
 
+import { theme } from '~/theme';
+
 const AnimatedLoaderCircleIcon = createAnimatedComponent(LoaderCircleIcon);
 
 export function Spinner({ style, ...props }: ComponentProps<LucideIcon>) {
@@ -27,7 +29,7 @@ export function Spinner({ style, ...props }: ComponentProps<LucideIcon>) {
 
   return (
     <AnimatedLoaderCircleIcon
-      color="#94a3b8"
+      color={theme.primary}
       size={20}
       style={[animatedStyles, style]}
       {...props}
