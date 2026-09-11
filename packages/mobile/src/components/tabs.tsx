@@ -28,7 +28,7 @@ export function Tabs({
   const handleTabPress = (index: number) => {
     setActiveIndex(index);
 
-    slideOffset.value = withSpring(index * tabWidth);
+    slideOffset.value = withSpring(index * tabWidth, { duration: 400 });
   };
 
   return (

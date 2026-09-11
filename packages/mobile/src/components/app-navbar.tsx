@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentProps } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { Link } from 'expo-router';
 import Constants from 'expo-constants';
 import {
   CirclePlayIcon,
@@ -24,7 +25,7 @@ export function AppNavbar({
   const [currentTab, setCurrentTab] = useState<Tab>('profile');
 
   const [timer, setTimer] = useState('loading...');
-  const deadline = new Date(2026, 8, 30);
+  const deadline = new Date(2026, 8, 13);
 
   useEffect(() => {
     const updateTimer = () => {
@@ -59,9 +60,9 @@ export function AppNavbar({
 
     updateTimer();
 
-    const intervalId = setInterval(updateTimer, 1000);
+    const handle = setInterval(updateTimer, 1000);
 
-    return () => clearInterval(intervalId);
+    return () => clearInterval(handle);
   }, [deadline]);
 
   return (
@@ -74,51 +75,59 @@ export function AppNavbar({
       {...props}
     >
       <View className="flex flex-row items-center justify-evenly py-2.5">
-        <Pressable
-          onPress={() => setCurrentTab('libray')}
-          className="flex items-center gap-1"
-        >
-          <LibraryBigIcon
-            color={currentTab === 'libray' ? '#ffffff' : theme.muted}
-            size={20}
-          />
-
-          <Text
-            style={{ color: currentTab === 'libray' ? '#ffffff' : theme.muted }}
-            className="text-xs"
+        <Link href="/library" asChild>
+          <Pressable
+            onPress={() => setCurrentTab('libray')}
+            className="flex items-center gap-1"
           >
-            Library
-          </Text>
-        </Pressable>
+            <LibraryBigIcon
+              color={currentTab === 'libray' ? '#ffffff' : theme.muted}
+              size={20}
+            />
 
-        <Pressable
-          onPress={() => setCurrentTab('home')}
-          style={{ backgroundColor: theme.primary }}
-          className="flex flex-row items-center gap-2 rounded-full px-4 py-2 active:opacity-80"
-        >
-          <CirclePlayIcon color="#ffffff" size={26} />
+            <Text
+              style={{
+                color: currentTab === 'libray' ? '#ffffff' : theme.muted,
+              }}
+              className="text-xs"
+            >
+              Library
+            </Text>
+          </Pressable>
+        </Link>
 
-          <Text className="font-semibold text-white">{timer}</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setCurrentTab('profile')}
-          className="flex items-center gap-1"
-        >
-          <CircleUserRoundIcon
-            color={currentTab === 'profile' ? '#ffffff' : theme.muted}
-            size={20}
-          />
-
-          <Text
-            style={{
-              color: currentTab === 'profile' ? '#ffffff' : theme.muted,
-            }}
-            className="text-xs"
+        <Link href="/" asChild>
+          <Pressable
+            onPress={() => setCurrentTab('home')}
+            style={{ backgroundColor: theme.primary }}
+            className="flex flex-row items-center gap-2 rounded-full px-4 py-2 active:opacity-80"
           >
-            Profile
-          </Text>
-        </Pressable>
+            <CirclePlayIcon color="#ffffff" size={26} />
+
+            <Text className="font-semibold text-white">{timer}</Text>
+          </Pressable>
+        </Link>
+
+        <Link href="/profile" asChild>
+          <Pressable
+            onPress={() => setCurrentTab('profile')}
+            className="flex items-center gap-1"
+          >
+            <CircleUserRoundIcon
+              color={currentTab === 'profile' ? '#ffffff' : theme.muted}
+              size={20}
+            />
+
+            <Text
+              style={{
+                color: currentTab === 'profile' ? '#ffffff' : theme.muted,
+              }}
+              className="text-xs"
+            >
+              Profile
+            </Text>
+          </Pressable>
+        </Link>
       </View>
     </View>
   );

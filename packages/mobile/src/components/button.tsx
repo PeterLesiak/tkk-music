@@ -31,3 +31,21 @@ export function ActionButton({
     </Pressable>
   );
 }
+
+export function DestructiveButton({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof Pressable>) {
+  return (
+    <Pressable
+      className={cn(
+        'relative flex flex-row items-center justify-center gap-2 rounded-md border border-red-700 bg-red-700/5 py-3 active:opacity-80',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </Pressable>
+  );
+}
