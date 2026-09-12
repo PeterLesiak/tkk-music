@@ -7,6 +7,9 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.example.tkkmusic"
+    },
     "plugins": [
       "expo-router",
       [

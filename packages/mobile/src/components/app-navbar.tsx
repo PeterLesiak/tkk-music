@@ -22,7 +22,7 @@ export function AppNavbar({
   className,
   ...props
 }: ComponentProps<typeof View>) {
-  const [currentTab, setCurrentTab] = useState<Tab>('profile');
+  const [currentTab, setCurrentTab] = useState<Tab>('home');
 
   const [timer, setTimer] = useState('loading...');
   const deadline = new Date(2026, 8, 13);

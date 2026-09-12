@@ -1,8 +1,12 @@
 {
   "name": "@tkk-music/root",
   "type": "module",
+  "workspaces": [
+    "./packages/*"
+  ],
   "scripts": {
-    "mobile:start": "pnpm --filter=@tkk-music/mobile start",
+    "mobile:build": "npm run build -w @tkk-music/mobile",
+    "mobile:dev": "npm run dev -w @tkk-music/mobile",
     "format": "prettier . --write"
   },
   "devDependencies": {
