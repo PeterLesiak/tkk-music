@@ -12,7 +12,7 @@ INSERT INTO
     identifier_types (type_code)
 VALUES ('email'),
     ('username'),
-    ('phone_number')
+    ('phone')
 ON DUPLICATE KEY UPDATE
     type_code = VALUES(type_code);
 

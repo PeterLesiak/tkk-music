@@ -19,8 +19,7 @@ const config: PoolConfig = {
      user: user,
      database: databaseName
 };
-if (password) config.password = password;
-else console.warn("Please set the password...");
+if (password) {config.password = password;} else {console.warn("Please set the password...");}
 
 if (host) {
      config.host = host;
@@ -46,9 +45,8 @@ const getCompletedMigrations = async (): Promise<Migration[]> => {
           connection = await pool.getConnection();
           await connection.query("create table if not exists schema_migrations (id int primary key auto_increment, name varchar(256) not null, migrationDate timestamp default now());");
           return await connection.query<Migration[]>("select name from schema_migrations");
-     }
-     finally {
-          if (connection) connection.release();
+     } finally {
+          if (connection) {connection.release();}
      }
 };
 
@@ -76,18 +74,15 @@ try {
                await connection.query("insert into schema_migrations (name) values (?);", [migrationFile]);
                await connection.commit();
                console.log(`Successfully ran: ${migrationFile}`);
-          }
-          catch (error) {
-               if (connection) await connection.rollback();
+          } catch (error) {
+               if (connection) {await connection.rollback();}
                console.error(error);
                throw error;
-          }
-          finally {
-               if (connection) await connection.release();
+          } finally {
+               if (connection) {await connection.release();}
           }
      }, Promise.resolve());
-}
-catch (error) {
+} catch (error) {
      console.error("Migration pipeline aborted due to an error.");
      console.error(error);
      process.exitCode = 1;
