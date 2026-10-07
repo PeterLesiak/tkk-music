@@ -7,7 +7,7 @@
     "target": "esnext",
     "lib": ["esnext"],
     "types": ["node"],
-    
+
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
 
@@ -25,7 +25,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": [
-      "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

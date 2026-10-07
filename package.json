@@ -1,18 +1,15 @@
 {
   "name": "@tkk-music/root",
   "type": "module",
-  "workspaces": [
-    "./packages/*"
-  ],
   "scripts": {
-    "mobile:build": "npm run build -w @tkk-music/mobile",
-    "mobile:dev": "npm run dev -w @tkk-music/mobile",
-    "backend:build": "npm run build -w @tkk-music/backend",
-    "backend:dev": "npm run dev -w @tkk-music/backend",
+    "mobile:build": "pnpm --filter=@tkk-music/mobile build",
+    "mobile:dev": "pnpm --filter=@tkk-music/mobile dev",
+    "backend:build": "pnpm --filter=@tkk-music/backend build",
+    "backend:dev": "pnpm --filter=@tkk-music/backend dev",
     "format": "prettier . --write"
   },
   "devDependencies": {
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "^7.0.2"
   }

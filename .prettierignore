@@ -1,7 +1,9 @@
-/node_modules
-/package-lock.json
+# node
+/**/node_modules
+/pnpm-lock.yaml
 
-**/.expo
-**/android
-**/ios
-
+# production
+/dist
+/dist-ssr
+/.tanstack
+/.output

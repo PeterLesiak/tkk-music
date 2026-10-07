@@ -1,30 +1,30 @@
 {
-    "name": "music-backend",
-    "scripts": {
-        "build": "npx tsc",
-        "start": "node dist",
-        "lint": "npx eslint",
-        "dev:build": "npx tsc --watch",
-        "dev": "node --watch .",
-        "migrate": "tsx ./scripts/migrate"
-    },
-    "type": "module",
-    "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@types/express": "^5.0.6",
-        "@types/node": "^26.5.0",
-        "eslint": "^10.11.0",
-        "globals": "^17.12.0",
-        "ts-api-utils": "^2.4.0",
-        "tsx": "^4.23.15",
-        "typescript": "~6.0.2",
-        "typescript-eslint": "^8.70.1"
-    },
-    "main": "./dist/main.js",
-    "exports": "./dist/main.js",
-    "dependencies": {
-        "dotenv": "^18.0.3",
-        "express": "^5.2.1",
-        "mariadb": "^3.5.4"
-    }
+  "name": "music-backend",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist",
+    "lint": "npx eslint",
+    "dev:build": "npx tsc --watch",
+    "dev": "node --watch .",
+    "migrate": "tsx ./scripts/migrate"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.4",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "ts-api-utils": "^2.5.0",
+    "tsx": "^4.23.15",
+    "typescript": "~7.0.2",
+    "typescript-eslint": "^8.71.1"
+  },
+  "main": "./dist/main.js",
+  "exports": "./dist/main.js",
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "mariadb": "^3.5.4"
+  }
 }

@@ -1,1 +1,11 @@
-/node_modules
+# node
+/**/node_modules
+
+# secrets
+/**/.env
+
+# production
+/dist
+/dist-ssr
+/.tanstack
+/.output

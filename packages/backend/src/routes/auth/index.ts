@@ -1,8 +1,8 @@
-import { Router } from "express";
-import registerRouter from "./register.js";
-import loginRouter from "./login.js";
-import sessionRouter from "./session.js";
-import configRouter from "./config.js";
+import { Router } from 'express';
+import registerRouter from './register.js';
+import loginRouter from './login.js';
+import sessionRouter from './session.js';
+import configRouter from './config.js';
 
 const authRouter = Router();
 
