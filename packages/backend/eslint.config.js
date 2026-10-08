@@ -14,7 +14,7 @@ export default defineConfig([
     rules: {
       indent: ['error', 5],
       semi: ['error', 'always'],
-      quotes: ['error', 'double'],
+      quotes: ['error', 'single'],
       'comma-dangle': ['error', 'never'],
       'comma-spacing': [
         'error',
