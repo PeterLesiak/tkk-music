@@ -5,7 +5,7 @@
 /**/.env
 
 # production
-/dist
-/dist-ssr
-/.tanstack
-/.output
+/**/dist
+/**/dist-ssr
+/**/.tanstack
+/**/.output

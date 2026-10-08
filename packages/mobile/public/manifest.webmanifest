@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "name": "TKK Music",
-  "short_name": "tkk-music",
+  "short_name": "TKK Music",
   "description": "TODO:",
   "start_url": "/",
   "display": "standalone",
