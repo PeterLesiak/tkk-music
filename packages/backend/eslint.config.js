@@ -1,6 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import tseslint from '@typescript-eslint/eslint-plugin';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
@@ -12,7 +12,7 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      indent: ['error', 5],
+      indent: ['error', 2],
       semi: ['error', 'always'],
       quotes: ['error', 'single'],
       'comma-dangle': ['error', 'never'],
