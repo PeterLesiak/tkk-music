@@ -12,6 +12,25 @@ interface PermissionDbRecord {
   permission_code: string;
   permission_category_id: number;
 }
+
+interface RoleDbRecord {
+  role_id: number;
+  role_code: string;
+  display_name: string;
+  description?: string;
+  is_system_role: boolean;
+  created_at: Date;
+}
+
+type Role = {
+  id: number;
+  code: string;
+  displayName: string;
+  description?: string | undefined;
+  isSystemRole: boolean;
+  createdAt: Date;
+};
+
 type JointDbRecord = PermissionCategoryDbRecord & PermissionDbRecord;
 type PermissionCategory = {
   id: number;
@@ -24,6 +43,7 @@ type Permission = {
 };
 
 let permissionMapCache: Map<string, Permission> = new Map();
+
 export const getPermission = async (name: string): Promise<Permission> => {
   if (permissionMapCache.has(name)) return permissionMapCache.get(name)!;
 
@@ -75,6 +95,33 @@ export const getUserPermissions = async (publicId: string) => {
       permissions.set(permission.name, permission);
     }
     return permissions;
+  } finally {
+    if (connection) connection.release();
+  }
+};
+export const getUserRoles = async (
+  publicId: string,
+): Promise<Role[] | null> => {
+  let connection: PoolConnection | null = null;
+  try {
+    connection = await getPool().getConnection();
+
+    const result = await connection.query<RoleDbRecord[]>(
+      'select user_roles.role_id, role_code, display_name, description, is_system_role, created_at from user_roles join roles on roles.role_id = user_roles.role_id where user_roles.role_id = (select user_id from users where public_id = UNHEX(?));',
+      [publicId],
+    );
+    const roles: Role[] = [];
+    for (const row of result) {
+      roles.push({
+        id: row.role_id,
+        code: row.role_code,
+        displayName: row.display_name,
+        description: row.description,
+        isSystemRole: !!row.is_system_role,
+        createdAt: row.created_at,
+      } satisfies Role);
+    }
+    return roles;
   } finally {
     if (connection) connection.release();
   }
