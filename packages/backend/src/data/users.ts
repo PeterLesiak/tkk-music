@@ -786,6 +786,7 @@ export const continueLoginSession = async (
 };
 
 export type SelfInfo = {
+  databaseId: number;
   userPublicId: string;
   status: UserStatusCode;
   createdAt: Date;
@@ -882,9 +883,14 @@ export const getSelfInfo = async (
     const userId = session.user_id;
 
     const userRows = await connection.query<
-      { public_id: Buffer; created_at: Date; status_code: UserStatusCode }[]
+      {
+        user_id: number;
+        public_id: Buffer;
+        created_at: Date;
+        status_code: UserStatusCode;
+      }[]
     >(
-      'select users.public_id, users.created_at, user_statuses.status_code from users inner join user_statuses on user_statuses.user_status_id = users.user_status_id where users.user_id = ? limit 1;',
+      'select users.user_id, users.public_id, users.created_at, user_statuses.status_code from users inner join user_statuses on user_statuses.user_status_id = users.user_status_id where users.user_id = ? limit 1;',
       [userId],
     );
 
@@ -913,6 +919,7 @@ export const getSelfInfo = async (
     );
 
     return {
+      databaseId: userRows[0]!.user_id,
       userPublicId: userRows[0]!.public_id.toString('hex'),
       status: userRows[0]!.status_code,
       createdAt: userRows[0]!.created_at,

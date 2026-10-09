@@ -1,5 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { IdentityType } from '../data/users.js';
+import {
+  getSelfInfo,
+  type IdentityType,
+  type SelfInfo,
+} from '../data/users.js';
 
 export const extractIdentity = (
   body: Partial<{ username: string; email: string; phone: string }>,
@@ -39,6 +43,7 @@ declare global {
         identity: string;
         identityType: 'username' | 'email' | 'phone';
       };
+      userInfo?: SelfInfo;
     }
   }
 }
@@ -80,3 +85,23 @@ export const requireStringField =
     }
     next();
   };
+
+export const requireValidSession = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const token = extractBearerToken(req.headers.authorization);
+  if (!token) {
+    res.status(401).json({ error: 'missing authorization header' });
+    return;
+  }
+  req.bearerToken = token;
+  const info = await getSelfInfo(token);
+  if (!info) {
+    res.status(401).json({ error: 'unauthorised' });
+    return;
+  }
+  req.userInfo = info;
+  return next();
+};
