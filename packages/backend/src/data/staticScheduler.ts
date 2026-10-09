@@ -5,7 +5,7 @@ import assert from 'node:assert';
 
 type TimeOnly = `${string}:${string}:${string}`;
 
-interface StaticScheduleBlockDbRecord {
+export interface StaticScheduleBlockDbRecord {
   static_schedule_block_id: number;
   day_of_week: number; // indexed from 0
   start_time: TimeOnly;
@@ -45,7 +45,7 @@ const days: [
   'sunday',
 ];
 type Genre = {};
-type StaticScheduleBlock = {
+export type StaticScheduleBlock = {
   id: number;
   dayOfWeek: WeekDay;
   startTime: TimeOnly;
