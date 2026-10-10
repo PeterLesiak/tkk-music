@@ -18,14 +18,6 @@ export interface StaticScheduleBlockDbRecord {
   created_at: Date;
   updated_at: Date;
 }
-export type WeekDay =
-  | 'monday'
-  | 'tuesday'
-  | 'wednesday'
-  | 'thursday'
-  | 'friday'
-  | 'saturday'
-  | 'sunday';
 
 const days: [
   'monday',
@@ -44,6 +36,8 @@ const days: [
   'saturday',
   'sunday',
 ];
+type Extract<T> = T extends (infer U)[] ? U : T;
+export type WeekDay = Extract<typeof days>;
 type Genre = {};
 export type StaticScheduleBlock = {
   id: number;
