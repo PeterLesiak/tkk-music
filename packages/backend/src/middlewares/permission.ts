@@ -1,8 +1,12 @@
 import type { Response, Request, NextFunction } from 'express';
 import './auth.js';
-import { getPermission, getUserPermissions } from '../data/permissions.js';
+import {
+  getPermission,
+  getUserPermissions,
+  type PermissionCode,
+} from '../data/permissions.js';
 
-export const requirePermission = async (name: string) => {
+export const requirePermission = async (name: PermissionCode) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const permission = await getPermission(name);
     if (!req.userInfo) {

@@ -1,6 +1,7 @@
 import type { PoolConnection } from 'mariadb';
 import { getPool } from '../data/db.js';
 import assert from 'node:assert';
+import type { MakePath } from '../util/types.js';
 
 interface PermissionCategoryDbRecord {
   permission_category_id: number;
@@ -36,15 +37,39 @@ type PermissionCategory = {
   id: number;
   name: string;
 };
+
+interface PermissionSchema {
+  music: {
+    artists: 'manage';
+    audio_files: 'manage';
+    songs: 'create' | 'delete' | 'edit' | 'view';
+  };
+  permissions: {
+    roles: 'manage';
+  };
+  queue: 'view' | 'manage';
+  scheduling: {
+    static: 'view' | 'manage';
+    dynamic: 'view' | 'manage';
+  };
+  system: {
+    audit_log: 'view';
+  };
+  users: 'manage' | 'view';
+}
+
+export type PermissionCode = MakePath<PermissionSchema>;
 type Permission = {
   id: number;
-  name: string;
+  name: PermissionCode;
   category: PermissionCategory;
 };
 
 let permissionMapCache: Map<string, Permission> = new Map();
 
-export const getPermission = async (name: string): Promise<Permission> => {
+export const getPermission = async (
+  name: PermissionCode,
+): Promise<Permission> => {
   if (permissionMapCache.has(name)) return permissionMapCache.get(name)!;
 
   let connection: PoolConnection | null = null;
@@ -84,7 +109,7 @@ export const getUserPermissions = async (publicId: string) => {
     let permissions: Map<string, Permission> = new Map();
     for (const row of result) {
       const permission = {
-        name: row.permission_code,
+        name: row.permission_code as PermissionCode,
         id: row.permission_id,
         category: {
           id: row.permission_category_id,
