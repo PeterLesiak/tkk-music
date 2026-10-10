@@ -1,6 +1,6 @@
-import type { PropsWithChildren } from 'react';
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
@@ -8,7 +8,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 
-import { AppLayout } from '~/components/app-layout';
+import { RootLayout } from '~/components/root-layout';
 import TanStackQueryDevtools from '~/integrations/tanstack-query/devtools';
 import appCss from '~/styles.css?url';
 
@@ -20,33 +20,31 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
-      },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'TanStack Start Starter' },
-      { name: 'description', content: 'TODO:' },
       { name: 'theme-color', content: '#1e1e1e' },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      { rel: 'manifest', href: '/manifest.webmanifest' },
       { rel: 'icon', href: '/favicon.ico' },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' },
-      { rel: 'manifest', href: '/manifest.webmanifest' },
     ],
   }),
-  shellComponent: RootDocument,
-  notFoundComponent: NotFound,
+  shellComponent: ShellComponent,
+  notFoundComponent: NotFoundComponent,
 });
 
-function RootDocument({ children }: PropsWithChildren) {
+function ShellComponent() {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <AppLayout>{children}</AppLayout>
+        <RootLayout>
+          <Outlet />
+        </RootLayout>
 
         <TanStackDevtools
           config={{
@@ -69,6 +67,6 @@ function RootDocument({ children }: PropsWithChildren) {
   );
 }
 
-function NotFound() {
+function NotFoundComponent() {
   return <p>Not Found</p>;
 }

@@ -7,44 +7,44 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
   return (
     <nav
       className={cn(
-        'bg-card border-border/40 fixed right-0 bottom-1.5 left-0 mx-2 rounded-full border-[1.5px] border-x-rose-400 py-2.5 shadow-sm',
+        'bg-card border-border/40 border-x-primary fixed right-0 bottom-1 left-0 mx-1.5 rounded-full border-[1.5px] py-2.5 shadow-sm',
         className,
       )}
       {...props}
     >
-      <div className="grid grid-cols-3 px-4">
-        <MatchRoute to="/library">
+      <div className="grid grid-cols-3 items-center px-4">
+        <MatchRoute fuzzy to="/library">
           {match => (
             <Link
               to="/library"
-              className={`${match ? 'text-rose-400' : ''} flex flex-col items-center gap-1.5`}
+              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
             >
               <LibraryIcon size={18} />
-              <span className="text-xs">Katalog</span>
+              <span className="text-xs font-medium">Katalog</span>
             </Link>
           )}
         </MatchRoute>
 
-        <MatchRoute to="/">
+        <MatchRoute fuzzy to="/home">
           {match => (
             <Link
-              to="/"
-              className={`${match ? 'text-rose-400' : ''} flex flex-col items-center gap-1.5`}
+              to="/home"
+              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
             >
               <MusicIcon size={18} />
-              <span className="text-xs">Muzyka</span>
+              <span className="text-xs font-medium">Muzyka</span>
             </Link>
           )}
         </MatchRoute>
 
-        <MatchRoute to="/profile">
+        <MatchRoute fuzzy to="/profile">
           {match => (
             <Link
               to="/profile"
-              className={`${match ? 'text-rose-400' : ''} flex flex-col items-center gap-1.5`}
+              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
             >
               <UserRoundIcon size={18} />
-              <span className="text-xs">Konto</span>
+              <span className="text-xs font-medium">Konto</span>
             </Link>
           )}
         </MatchRoute>
