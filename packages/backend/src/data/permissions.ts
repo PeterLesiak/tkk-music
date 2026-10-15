@@ -103,7 +103,7 @@ export const getUserPermissions = async (publicId: string) => {
     connection = await getPool().getConnection();
 
     const result = await connection.query<JointDbRecord[]>(
-      'select permissions.permission_id as permission_id, permission_code, permissions.permission_category_id as permission_category_id, category_code from user_roles join role_permissions on role_permissions.role_id = user_roles.role_id join permissions on permissions.permission_id = role_permissions.permission_id join permission_categories on permission_categories.permission_category_id = permissions.permission_category_id where user_roles.role_id = (select user_id from users where public_id = UNHEX(?));',
+      'select permissions.permission_id as permission_id, permission_code, permissions.permission_category_id as permission_category_id, category_code from user_roles join role_permissions on role_permissions.role_id = user_roles.role_id join permissions on permissions.permission_id = role_permissions.permission_id join permission_categories on permission_categories.permission_category_id = permissions.permission_category_id where user_roles.user_id = (select user_id from users where public_id = UNHEX(?));',
       [publicId],
     );
     let permissions: Map<string, Permission> = new Map();
@@ -124,6 +124,7 @@ export const getUserPermissions = async (publicId: string) => {
     if (connection) connection.release();
   }
 };
+
 export const getUserRoles = async (
   publicId: string,
 ): Promise<Role[] | null> => {
@@ -132,7 +133,7 @@ export const getUserRoles = async (
     connection = await getPool().getConnection();
 
     const result = await connection.query<RoleDbRecord[]>(
-      'select user_roles.role_id, role_code, display_name, description, is_system_role, created_at from user_roles join roles on roles.role_id = user_roles.role_id where user_roles.role_id = (select user_id from users where public_id = UNHEX(?));',
+      'select user_roles.role_id, role_code, display_name, description, is_system_role, created_at from user_roles join roles on roles.role_id = user_roles.role_id where user_roles.user_id = (select user_id from users where public_id = UNHEX(?));',
       [publicId],
     );
     const roles: Role[] = [];

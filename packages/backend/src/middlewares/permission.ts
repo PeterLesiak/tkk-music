@@ -1,26 +1,41 @@
 import type { Response, Request, NextFunction } from 'express';
-import './auth.js';
+import { getAuditContext } from './auth.js';
 import {
-  getPermission,
   getUserPermissions,
   type PermissionCode,
 } from '../data/permissions.js';
+import { tryWriteAuditLog } from '../data/auditlog.js';
 
-export const requirePermission = async (name: PermissionCode) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const permission = await getPermission(name);
-    if (!req.userInfo) {
-      res.status(401).json({ error: 'This endpoint requires authorisation' });
-      return;
-    }
-    const userPerms = await getUserPermissions(req.userInfo.userPublicId);
+export const requirePermission =
+  (name: PermissionCode) =>
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        if (!req.userInfo) {
+          res
+            .status(401)
+            .json({ error: 'This endpoint requires authorisation' });
+          return;
+        }
 
-    if (!userPerms.has(permission.name)) {
-      res.status(403).json({
-        error: `Access denied (missing permission: ${permission.name})`,
-      });
-      return;
-    }
-    return next();
-  };
-};
+        const userPerms = await getUserPermissions(req.userInfo.userPublicId);
+
+        if (!userPerms.has(name)) {
+          await tryWriteAuditLog({
+            action: 'permission.denied',
+            actorUserId: req.userInfo.databaseId,
+            targetType: 'permission',
+            targetId: name,
+            success: false,
+            newValue: { method: req.method, path: req.originalUrl },
+            ...getAuditContext(req),
+          });
+          res.status(403).json({
+            error: `Access denied (missing permission: ${name})`,
+          });
+          return;
+        }
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };

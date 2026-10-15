@@ -6,6 +6,7 @@ import {
   verifyPassword,
   verifyTotpCode,
 } from '../util/security.js';
+import { tryWriteAuditLog, writeAuditLog, type AuditContext } from './auditlog.js';
 
 export type IdentityType = 'username' | 'email' | 'phone';
 
@@ -174,6 +175,7 @@ export const registerUser = async (
   identity: string,
   identityType: IdentityType,
   password: string,
+  ctx: AuditContext = {},
 ): Promise<RegisterResult> => {
   const hashedPassword = await hashPassword(password);
 
@@ -208,13 +210,35 @@ export const registerUser = async (
       [userID, authMethodId, hashedPassword],
     );
 
+    await writeAuditLog(
+      {
+        action: 'auth.register',
+        actorUserId: Number(userID),
+        targetType: 'user',
+        targetId: publicId,
+        newValue: { identityType },
+        ...ctx,
+      },
+      connection,
+    );
+
     await connection.commit();
     return { userId: Number(userID), userPublicId: publicId };
   } catch (error) {
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
+    await tryWriteAuditLog(
+      {
+        action: 'auth.register',
+        actorType: 'admin',
+        success: false,
+        newValue: { identityType },
+        ...ctx,
+      },
+      connection ?? undefined,
+    );
     return null;
   } finally {
     if (connection) {
@@ -245,7 +269,7 @@ export const createSessionAfterRegistration = async (
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
     return null;
   } finally {
     if (connection) {
@@ -275,7 +299,7 @@ export const cleanupExpiredLoginAttempts = async (): Promise<void> => {
   }
 };
 
-export const startLoginSession = async (
+const startLoginSessionInternal = async (
   identity: string,
   identityType: IdentityType,
   idempotencyKey: string,
@@ -448,7 +472,7 @@ export const startLoginSession = async (
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
     return {
       loginAttemptPublicId: '',
       status: 'failed',
@@ -460,6 +484,29 @@ export const startLoginSession = async (
       connection.release();
     }
   }
+};
+
+export const startLoginSession = async (
+  identity: string,
+  identityType: IdentityType,
+  idempotencyKey: string,
+  ctx: AuditContext = {},
+): Promise<LoginSessionResult> => {
+  const result = await startLoginSessionInternal(
+    identity,
+    identityType,
+    idempotencyKey,
+  );
+  await tryWriteAuditLog({
+    action: 'auth.login.start',
+    actorType: 'admin',
+    targetType: 'login_attempt',
+    targetId: result.loginAttemptPublicId || undefined,
+    success: result.status !== 'failed',
+    newValue: { identityType, userFound: result.userFound },
+    ...ctx,
+  });
+  return result;
 };
 
 export type LoginCredential =
@@ -569,6 +616,7 @@ export const continueLoginSession = async (
   loginAttemptPublicId: string,
   credential: LoginCredential,
   deviceToken: string | null,
+  ctx: AuditContext = {},
 ): Promise<ContinueLoginResult> => {
   let connection: PoolConnection | null = null;
   try {
@@ -603,10 +651,26 @@ export const continueLoginSession = async (
 
     if (attemptRows.length === 0) {
       await connection.rollback();
+      await tryWriteAuditLog(
+        {
+          action: 'auth.login.failure',
+          actorType: 'admin',
+          success: false,
+          newValue: { reason: 'unknown_attempt' },
+          ...ctx,
+        },
+        connection,
+      );
       return { status: 'failed' };
     }
 
     const attempt = attemptRows[0]!;
+    const attemptAudit = {
+      actorUserId: attempt.user_id,
+      targetType: 'login_attempt',
+      targetId: loginAttemptPublicId,
+      ...ctx,
+    };
 
     if (attempt.expires_at.getTime() <= Date.now()) {
       await connection.query(
@@ -614,11 +678,29 @@ export const continueLoginSession = async (
         [loginAttemptStatuses.get('expired'), attempt.login_attempt_id],
       );
       await connection.commit();
+      await tryWriteAuditLog(
+        {
+          action: 'auth.login.failure',
+          success: false,
+          newValue: { reason: 'expired' },
+          ...attemptAudit,
+        },
+        connection,
+      );
       return { status: 'expired' };
     }
 
     if (attempt.user_id === null || attempt.current_auth_method_id === null) {
       await connection.rollback();
+      await tryWriteAuditLog(
+        {
+          action: 'auth.login.failure',
+          success: false,
+          newValue: { reason: 'no_user_for_attempt' },
+          ...attemptAudit,
+        },
+        connection,
+      );
       return { status: 'failed' };
     }
 
@@ -627,6 +709,15 @@ export const continueLoginSession = async (
     );
     if (expectedMethodCode !== credential.method) {
       await connection.rollback();
+      await tryWriteAuditLog(
+        {
+          action: 'auth.login.failure',
+          success: false,
+          newValue: { reason: 'method_mismatch', method: credential.method },
+          ...attemptAudit,
+        },
+        connection,
+      );
       return { status: 'failed' };
     }
 
@@ -701,6 +792,15 @@ export const continueLoginSession = async (
 
     if (!credentialValid) {
       await connection.commit();
+      await tryWriteAuditLog(
+        {
+          action: 'auth.login.failure',
+          success: false,
+          newValue: { reason: 'invalid_credential', method: credential.method },
+          ...attemptAudit,
+        },
+        connection,
+      );
       return { status: 'failed' };
     }
 
@@ -750,6 +850,17 @@ export const continueLoginSession = async (
             loginAttemptStepStatuses.get('pending'),
           ],
         );
+        await writeAuditLog(
+          {
+            action: 'auth.login.mfa_required',
+            newValue: {
+              completedMethod: credential.method,
+              nextMethod: methodIdToCode.get(nextMethodId),
+            },
+            ...attemptAudit,
+          },
+          connection,
+        );
         await connection.commit();
         return {
           status: 'mfa_pending',
@@ -765,6 +876,22 @@ export const continueLoginSession = async (
     );
     const tokens = await createSessionForUser(connection, userId, deviceId);
 
+    await writeAuditLog(
+      {
+        action: 'auth.login.success',
+        actorUserId: userId,
+        targetType: 'session',
+        targetId: tokens.sessionPublicId,
+        newValue: {
+          method: credential.method,
+          deviceId,
+          loginAttemptId: loginAttemptPublicId,
+        },
+        ...ctx,
+      },
+      connection,
+    );
+
     await connection.query(
       'delete from login_attempts where login_attempt_id = ?;',
       [attempt.login_attempt_id],
@@ -776,7 +903,19 @@ export const continueLoginSession = async (
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
+    await tryWriteAuditLog(
+      {
+        action: 'auth.login.failure',
+        actorType: 'admin',
+        targetType: 'login_attempt',
+        targetId: loginAttemptPublicId,
+        success: false,
+        newValue: { reason: 'error' },
+        ...ctx,
+      },
+      connection ?? undefined,
+    );
     return { status: 'failed' };
   } finally {
     if (connection) {
@@ -862,7 +1001,7 @@ export const getUserConfiguration = async (
     };
     return buildConfig;
   } catch (error) {
-    console.error(error); // todo: audit log?
+    console.error(error);
     return null;
   } finally {
     if (connection) {
@@ -930,7 +1069,7 @@ export const getSelfInfo = async (
       })),
     };
   } catch (error) {
-    console.error(error); // todo: audit log?
+    console.error(error);
     return null;
   } finally {
     if (connection) {
@@ -942,6 +1081,7 @@ export const getSelfInfo = async (
 export const refreshSession = async (
   refreshToken: string,
   rotateRefreshToken: boolean,
+  ctx: AuditContext = {},
 ): Promise<SessionTokens | null> => {
   let connection: PoolConnection | null = null;
   try {
@@ -1017,6 +1157,17 @@ export const refreshSession = async (
           "update sessions set session_status_id = ?, revoked_at = NOW(6), revoked_reason = 'refresh_token_reuse' where session_id = ?;",
           [sessionStatuses.get('revoked'), row.session_id],
         );
+        await writeAuditLog(
+          {
+            action: 'auth.refresh_token_reuse',
+            actorUserId: row.user_id,
+            targetType: 'session',
+            targetId: String(row.session_id),
+            success: false,
+            ...ctx,
+          },
+          connection,
+        );
         await connection.commit();
         return null;
       }
@@ -1088,7 +1239,7 @@ export const refreshSession = async (
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
     return null;
   } finally {
     if (connection) {
@@ -1097,7 +1248,10 @@ export const refreshSession = async (
   }
 };
 
-export const logoutSession = async (sessionToken: string): Promise<boolean> => {
+export const logoutSession = async (
+  sessionToken: string,
+  ctx: AuditContext = {},
+): Promise<boolean> => {
   let connection: PoolConnection | null = null;
   try {
     connection = await getPool().getConnection();
@@ -1105,8 +1259,10 @@ export const logoutSession = async (sessionToken: string): Promise<boolean> => {
 
     const sessionStatuses = await getSessionStatuses(connection);
 
-    const sessionRows = await connection.query<{ session_id: bigint }[]>(
-      'select sessions.session_id from session_tokens inner join sessions on sessions.session_id = session_tokens.session_id where session_tokens.token_hash = ? limit 1;',
+    const sessionRows = await connection.query<
+      { session_id: bigint; user_id: number }[]
+    >(
+      'select sessions.session_id, sessions.user_id from session_tokens inner join sessions on sessions.session_id = session_tokens.session_id where session_tokens.token_hash = ? limit 1;',
       [sha256Hex(sessionToken)],
     );
 
@@ -1114,18 +1270,29 @@ export const logoutSession = async (sessionToken: string): Promise<boolean> => {
       await connection.rollback();
       return false;
     }
+    const { session_id: sessionId, user_id: userId } = sessionRows[0]!;
 
     await connection.query(
       "update sessions set session_status_id = ?, revoked_at = NOW(6), revoked_reason = 'logout' where session_id = ?;",
-      [sessionStatuses.get('revoked'), sessionRows[0]!.session_id],
+      [sessionStatuses.get('revoked'), sessionId],
     );
     await connection.query(
       'update session_tokens set revoked_at = NOW(6) where session_id = ?;',
-      [sessionRows[0]!.session_id],
+      [sessionId],
     );
     await connection.query(
       "update refresh_tokens set refresh_token_status_id = (select refresh_token_status_id from refresh_token_statuses where status_code = 'revoked'), revoked_at = NOW(6) where session_id = ?;",
-      [sessionRows[0]!.session_id],
+      [sessionId],
+    );
+    await writeAuditLog(
+      {
+        action: 'auth.logout',
+        actorUserId: userId,
+        targetType: 'session',
+        targetId: String(sessionId),
+        ...ctx,
+      },
+      connection,
     );
 
     await connection.commit();
@@ -1134,7 +1301,7 @@ export const logoutSession = async (sessionToken: string): Promise<boolean> => {
     if (connection) {
       await connection.rollback();
     }
-    console.error(error); // todo: audit log?
+    console.error(error);
     return false;
   } finally {
     if (connection) {

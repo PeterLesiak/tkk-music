@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getAuditContext,
   requireBearerToken,
   requireStringField,
   requireValidSession,
@@ -9,6 +10,7 @@ import {
   checkStaticEntryExists,
   createStaticScheduleEntry,
   daysOfWeek,
+  deleteStaticScheduleById,
   getStaticSchedule,
   getStaticScheduleBiId,
   parseInputTime,
@@ -16,36 +18,40 @@ import {
   type WeekDay,
 } from '../../data/staticScheduler.js';
 import assert from 'node:assert';
-import { isBooleanObject } from 'node:util/types';
 
 const staticScheduleRouter = Router();
+
+const parseId = (raw: unknown): number | null => {
+  if (typeof raw !== 'string' || isNaN(parseInt(raw))) return null;
+  return parseInt(raw);
+};
+
 staticScheduleRouter.get(
   '/static',
   requireBearerToken,
   requireValidSession,
-  await requirePermission('scheduling.static.view'),
+  requirePermission('scheduling.static.view'),
   async (_req, res) => {
     // TODO: take params from req (query?)
     res.json(await getStaticSchedule());
   },
 );
+
 staticScheduleRouter.get(
   '/static/:id',
   requireBearerToken,
   requireValidSession,
-  await requirePermission('scheduling.static.view'),
+  requirePermission('scheduling.static.view'),
   async (req, res) => {
-    const loseId = req.params['id'];
-    if (!loseId || isNaN(parseInt(loseId as string))) {
-      res.status(400).json({
-        error: 'Invalid id',
-      });
+    const id = parseId(req.params['id']);
+    if (id === null) {
+      res.status(400).json({ error: 'Invalid id' });
       return;
     }
-    const id = parseInt(loseId as string);
     res.json(await getStaticScheduleBiId(id));
   },
 );
+
 staticScheduleRouter.put(
   '/static/:weekDay',
   requireBearerToken,
@@ -53,7 +59,7 @@ staticScheduleRouter.put(
   requireStringField('startTime'),
   requireStringField('endTime'),
   requireStringField('label'),
-  await requirePermission('scheduling.static.manage'),
+  requirePermission('scheduling.static.manage'),
   async (req, res) => {
     const loseDayWeek = req.params['weekDay'] as string;
 
@@ -62,17 +68,13 @@ staticScheduleRouter.put(
         parseInt(loseDayWeek) >= daysOfWeek.length) &&
       !daysOfWeek.includes(loseDayWeek as WeekDay)
     ) {
-      res
-        .status(400)
-        .json({ error: `Invalid week day: ${req.params['weekDay']}` });
+      res.status(400).json({ error: `Invalid week day: ${loseDayWeek}` });
       return;
     }
 
     const dayOfWeekName: WeekDay = isNaN(parseInt(loseDayWeek))
       ? (loseDayWeek as WeekDay)
-      : (daysOfWeek[
-          parseInt(req.params['weekDay'] as unknown as string)
-        ]! as WeekDay);
+      : (daysOfWeek[parseInt(loseDayWeek)]! as WeekDay);
 
     const {
       startTime: startTimeRaw,
@@ -90,9 +92,7 @@ staticScheduleRouter.put(
       return;
     }
     if (await checkStaticEntryExists(dayOfWeekName, startTime)) {
-      res.status(409).json({
-        error: 'Entry already exists',
-      });
+      res.status(409).json({ error: 'Entry already exists' });
       return;
     }
 
@@ -103,29 +103,26 @@ staticScheduleRouter.put(
       label,
       req.userInfo.databaseId,
       description,
+      getAuditContext(req),
     );
     res.status(201).json({ status: 'ok' });
   },
 );
+
 staticScheduleRouter.patch(
   '/static/:id',
   requireBearerToken,
   requireValidSession,
-  await requirePermission('scheduling.static.manage'),
+  requirePermission('scheduling.static.manage'),
   async (req, res) => {
-    const loseId = req.params['id'];
-    if (!loseId || isNaN(parseInt(loseId as string))) {
-      res.status(400).json({
-        error: 'Invalid id',
-      });
+    const id = parseId(req.params['id']);
+    if (id === null) {
+      res.status(400).json({ error: 'Invalid id' });
       return;
     }
-    const id = parseInt(loseId as string);
-    let details = await getStaticScheduleBiId(id);
+    const details = await getStaticScheduleBiId(id);
     if (!details) {
-      res.status(404).json({
-        error: 'Invalid entry id',
-      });
+      res.status(404).json({ error: 'Invalid entry id' });
       return;
     }
 
@@ -145,56 +142,46 @@ staticScheduleRouter.patch(
     if (description) details.description = description;
     if (isActive === 'true') details.isActive = true;
     else if (isActive === 'false') details.isActive = false;
-    else if (isBooleanObject(isActive)) details.isActive = isActive as boolean;
+    else if (typeof isActive === 'boolean') details.isActive = isActive;
 
     assert(req.userInfo);
-
     details.updatedByUser = req.userInfo;
 
-    const result = await updateStaticScheduleById(details);
+    const result = await updateStaticScheduleById(
+      details,
+      getAuditContext(req),
+    );
     if (!result) {
-      res.status(500).json({
-        error: 'Unexpected server error',
-      });
+      res.status(500).json({ error: 'Unexpected server error' });
       return;
     }
-    res.status(200).json({
-      status: 'Ok',
-    });
+    res.status(200).json({ status: 'Ok' });
   },
 );
+
 staticScheduleRouter.delete(
   '/static/:id',
   requireBearerToken,
   requireValidSession,
-  await requirePermission('scheduling.static.manage'),
+  requirePermission('scheduling.static.manage'),
   async (req, res) => {
-    const loseId = req.params['id'];
-    if (!loseId || isNaN(parseInt(loseId as string))) {
-      res.status(400).json({
-        error: 'Invalid id',
-      });
+    const id = parseId(req.params['id']);
+    if (id === null) {
+      res.status(400).json({ error: 'Invalid id' });
       return;
     }
-    const id = parseInt(loseId as string);
-    let details = await getStaticScheduleBiId(id);
-    if (!details) {
-      res.status(404).json({
-        error: 'Invalid entry id',
-      });
-      return;
-    }
+    assert(req.userInfo);
 
-    const result = await updateStaticScheduleById(details);
-    if (!result) {
-      res.status(500).json({
-        error: 'Unexpected server error',
-      });
+    const deleted = await deleteStaticScheduleById(
+      id,
+      req.userInfo.databaseId,
+      getAuditContext(req),
+    );
+    if (!deleted) {
+      res.status(404).json({ error: 'Invalid entry id' });
       return;
     }
-    res.status(200).json({
-      status: 'Ok',
-    });
+    res.status(200).json({ status: 'Ok' });
   },
 );
 
