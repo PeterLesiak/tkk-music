@@ -7,7 +7,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
   return (
     <nav
       className={cn(
-        'bg-card fixed right-0 bottom-2 left-0 z-100 mx-2 rounded-md border py-2 shadow-sm',
+        'bg-card/70 fixed right-0 bottom-2 left-0 z-100 mx-2 rounded-md border py-2 shadow-sm backdrop-blur-sm',
         className,
       )}
       {...props}

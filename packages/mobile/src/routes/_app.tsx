@@ -10,12 +10,14 @@ export const Route = createFileRoute('/_app')({
 
 function RouteComponent() {
   return (
-    <div className="relative min-h-dvh">
+    <div className="relative flex h-dvh flex-col overflow-hidden">
       <div className="pointer-events-none absolute top-0 left-0 z-0 h-1/3 w-full bg-linear-to-b from-zinc-700/20 to-transparent"></div>
 
-      <StickyPlayer />
+      <StickyPlayer className="z-10 shrink-0" />
 
-      <Outlet />
+      <div className="flex flex-1 flex-col overflow-hidden px-4 pt-2">
+        <Outlet />
+      </div>
 
       <NavigationBar />
     </div>

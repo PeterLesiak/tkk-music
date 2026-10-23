@@ -137,3 +137,26 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .equalizer-1 {
+    animation: equalizer 1s ease-in-out infinite alternate;
+  }
+
+  .equalizer-2 {
+    animation: equalizer 0.8s ease-in-out infinite alternate 0.2s;
+  }
+
+  .equalizer-3 {
+    animation: equalizer 1.2s ease-in-out infinite alternate 0.4s;
+  }
+
+  @keyframes equalizer {
+    from {
+      height: 4px;
+    }
+    to {
+      height: 16px;
+    }
+  }
+}

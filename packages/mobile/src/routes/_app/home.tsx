@@ -6,7 +6,6 @@ import {
   ChevronDownIcon,
   ClockPlusIcon,
   ListChevronsUpDownIcon,
-  SmartphoneNfcIcon,
 } from 'lucide-react';
 
 import {
@@ -20,8 +19,11 @@ export const Route = createFileRoute('/_app/home')({ component: Home });
 
 function Home() {
   return (
-    <div className="grid gap-8 px-4 pt-2">
-      <ScheduleHeader />
+    <div className="flex h-full flex-col gap-6">
+      <div className="shrink-0">
+        <ScheduleHeader />
+      </div>
+
       <ScheduleContent />
     </div>
   );
@@ -36,7 +38,7 @@ function ScheduleHeader() {
           <div className="flex w-full items-center justify-between">
             <div className="flex flex-col items-start">
               <span className="text-sm font-bold tracking-wider uppercase">
-                <span className="text-accent">piątek</span>, 23 paź
+                piątek, 23 paź
               </span>
               <h2 className="text-3xl font-bold tracking-tight">Harmonogram</h2>
             </div>
@@ -62,12 +64,6 @@ function ScheduleHeader() {
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <SmartphoneNfcIcon size={20} /> Pierwsza muzyka
-          </div>
-          <span className="font-medium">08:30</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
             <ClockPlusIcon size={20} /> Całkowity czas muzyki
           </div>
           <span className="font-medium">32min</span>
@@ -83,6 +79,7 @@ type ScheduleSlot = {
   endTime: string;
   trackCount?: number;
   tracksPlayed?: number;
+  collapsed?: boolean;
   isPast?: boolean;
   isActive?: boolean;
 };
@@ -109,11 +106,32 @@ const scheduleData: ScheduleSlot[] = [
     tracksPlayed: 1,
     isActive: true,
   },
+  {
+    id: 'slot-4',
+    startTime: '08:45',
+    endTime: '08:55',
+    trackCount: 5,
+    tracksPlayed: 5,
+    isPast: true,
+  },
+  {
+    id: 'slot-5',
+    startTime: '09:40',
+    endTime: '09:50',
+  },
+  {
+    id: 'slot-6',
+    startTime: '10:35',
+    endTime: '10:45',
+    trackCount: 5,
+    tracksPlayed: 1,
+    isActive: true,
+  },
 ];
 
 function ScheduleContent() {
   return (
-    <div className="relative">
+    <div className="scroll-fade-y relative flex-1 overflow-y-auto pt-6 pb-28">
       <div className="flex flex-col gap-10">
         {scheduleData.map(slot => (
           <div key={slot.id} className="relative flex gap-4">
@@ -132,49 +150,56 @@ function ScheduleContent() {
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col justify-center">
+            <div className="flex flex-1 flex-col justify-center pr-4">
               {slot.trackCount ? (
-                <div
-                  className={`${slot.isPast ? 'opacity-50' : ''} ${slot.isActive ? 'bg-accent/40 border-accent/70' : 'bg-secondary'} grid w-full gap-2 rounded-md border p-3`}
+                <Collapsible
+                  className={`${slot.isPast ? 'opacity-50' : ''} ${slot.isActive ? 'bg-accent/40 border-accent/70' : 'bg-secondary'} group grid w-full gap-2 rounded-md border p-3`}
                 >
-                  <div className="flex w-full items-center justify-between">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between">
                     <span className="text-sm font-semibold">
                       Odtworzono {slot.tracksPlayed} z 5
                     </span>
 
-                    <ChevronDownIcon size={18} />
-                  </div>
-
-                  <div className="flex items-center gap-2 p-1">
-                    <img
-                      src="/music-thumbnail.png"
-                      className="aspect-square size-7 rounded object-cover opacity-90"
+                    <ChevronDownIcon
+                      size={18}
+                      className="transition group-data-open:rotate-180"
                     />
-                    <div className="grid">
-                      <span className="truncate text-xs leading-tight font-semibold">
-                        Manga 67 Musztarda
-                      </span>
-                      <span className="truncate text-[9px]">Discoadamus</span>
+                  </CollapsibleTrigger>
+
+                  <CollapsibleContent className="grid gap-2">
+                    <div className="flex items-center gap-2 p-1">
+                      <img
+                        src="/music-thumbnail.png"
+                        className="aspect-square size-7 rounded object-cover opacity-90"
+                      />
+                      <div className="grid">
+                        <span className="truncate text-xs leading-tight font-semibold">
+                          Mango 67 Musztarda
+                        </span>
+                        <span className="truncate text-[9px] tracking-wider">
+                          Discoadamus
+                        </span>
+                      </div>
+
+                      <AudioLinesIcon size={18} className="ml-auto" />
                     </div>
 
-                    <AudioLinesIcon size={18} className="ml-auto" />
-                  </div>
+                    <div className="flex items-center gap-2 p-1">
+                      <img
+                        src="/music-thumbnail.png"
+                        className="aspect-square size-7 rounded object-cover opacity-90"
+                      />
+                      <div className="grid">
+                        <span className="truncate text-xs leading-tight font-semibold">
+                          Manga 67 Musztarda
+                        </span>
+                        <span className="truncate text-[9px]">Discoadamus</span>
+                      </div>
 
-                  <div className="flex items-center gap-2 p-1">
-                    <img
-                      src="/music-thumbnail.png"
-                      className="aspect-square size-7 rounded object-cover opacity-90"
-                    />
-                    <div className="grid">
-                      <span className="truncate text-xs leading-tight font-semibold">
-                        Manga 67 Musztarda
-                      </span>
-                      <span className="truncate text-[9px]">Discoadamus</span>
+                      <AudioLinesIcon size={18} className="ml-auto" />
                     </div>
-
-                    <AudioLinesIcon size={18} className="ml-auto" />
-                  </div>
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ) : (
                 <div className="pl-1 text-sm font-medium brightness-60">
                   Brak utworów

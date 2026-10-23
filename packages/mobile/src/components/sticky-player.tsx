@@ -11,11 +11,17 @@ import { Button } from '~/components/ui/button';
 
 export function StickyPlayer({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('sticky px-4 py-4', className)} {...props}>
+    <div className={cn('sticky top-0 z-50 px-4 py-4', className)} {...props}>
       <div className="grid overflow-hidden rounded-md border-t border-r border-l bg-neutral-800/70 backdrop-blur-lg">
         <div className="flex items-center p-3">
-          <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+          <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm">
             <img src="/music-thumbnail.png" className="aspect-square" />
+
+            <div className="absolute right-1 bottom-1 flex items-end gap-0.5 text-white/90">
+              <div className="equalizer-1 w-0.5 rounded-t-sm bg-current"></div>
+              <div className="equalizer-2 w-0.5 rounded-t-sm bg-current"></div>
+              <div className="equalizer-3 w-0.5 rounded-t-sm bg-current"></div>
+            </div>
           </div>
 
           <div className="ml-3 grid overflow-hidden">
@@ -39,7 +45,7 @@ export function StickyPlayer({ className, ...props }: ComponentProps<'div'>) {
           value={60}
           render={
             <ProgressTrack className="rounded-none">
-              <ProgressIndicator />
+              <ProgressIndicator className="bg-accent" />
             </ProgressTrack>
           }
         />
