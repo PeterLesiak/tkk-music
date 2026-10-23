@@ -8,8 +8,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 
-import { RootLayout } from '~/components/root-layout';
 import TanStackQueryDevtools from '~/integrations/tanstack-query/devtools';
+import { RootProvider } from '~/components/root-provider';
 import appCss from '~/styles.css?url';
 
 interface MyRouterContext {
@@ -42,9 +42,9 @@ function ShellComponent() {
         <HeadContent />
       </head>
       <body>
-        <RootLayout>
+        <RootProvider>
           <Outlet />
-        </RootLayout>
+        </RootProvider>
 
         <TanStackDevtools
           config={{

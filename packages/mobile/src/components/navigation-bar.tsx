@@ -7,7 +7,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
   return (
     <nav
       className={cn(
-        'bg-card border-border/40 border-x-primary fixed right-0 bottom-1 left-0 mx-1.5 rounded-full border-[1.5px] py-2.5 shadow-sm',
+        'bg-card fixed right-0 bottom-2 left-0 z-100 mx-2 rounded-md border py-2 shadow-sm',
         className,
       )}
       {...props}
@@ -17,7 +17,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
           {match => (
             <Link
               to="/library"
-              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
+              className={`${match ? 'text-accent' : ''} flex flex-col items-center gap-1.5`}
             >
               <LibraryIcon size={18} />
               <span className="text-xs font-medium">Katalog</span>
@@ -29,7 +29,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
           {match => (
             <Link
               to="/home"
-              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
+              className={`${match ? 'text-accent' : ''} flex flex-col items-center gap-1.5`}
             >
               <MusicIcon size={18} />
               <span className="text-xs font-medium">Muzyka</span>
@@ -41,7 +41,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
           {match => (
             <Link
               to="/profile"
-              className={`${match ? 'text-primary' : ''} flex flex-col items-center gap-1.5`}
+              className={`${match ? 'text-accent' : ''} flex flex-col items-center gap-1.5`}
             >
               <UserRoundIcon size={18} />
               <span className="text-xs font-medium">Konto</span>
