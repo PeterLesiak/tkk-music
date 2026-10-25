@@ -44,7 +44,7 @@ export function NavigationBar({ className, ...props }: ComponentProps<'nav'>) {
               className={`${match ? 'text-accent' : ''} flex flex-col items-center gap-1.5`}
             >
               <UserRoundIcon size={18} />
-              <span className="text-xs font-medium">Konto</span>
+              <span className="text-xs font-medium">Profil</span>
             </Link>
           )}
         </MatchRoute>
