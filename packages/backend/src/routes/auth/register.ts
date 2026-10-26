@@ -3,7 +3,11 @@ import {
   registerUser,
   createSessionAfterRegistration,
 } from '../../data/users.js';
-import { requireIdentity, requireStringField } from '../../middlewares/auth.js';
+import {
+  getAuditContext,
+  requireIdentity,
+  requireStringField,
+} from '../../middlewares/auth.js';
 
 const registerRouter = Router();
 
@@ -18,6 +22,7 @@ registerRouter.post(
       identity,
       identityType,
       req.body.password,
+      getAuditContext(req),
     );
     if (!registerResult) {
       res.status(409).json({ error: 'registration failed' });

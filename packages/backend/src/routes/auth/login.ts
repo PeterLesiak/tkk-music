@@ -7,6 +7,7 @@ import {
   type LoginCredential,
 } from '../../data/users.js';
 import {
+  getAuditContext,
   requireBearerToken,
   requireIdentity,
   requireStringField,
@@ -37,6 +38,7 @@ loginRouter.post(
       identity,
       identityType,
       req.body.nonce,
+      getAuditContext(req),
     );
     if (result.status === 'failed' || !result.requiredAuthMethod) {
       res.status(401).json({ error: 'invalid credentials' });
@@ -94,6 +96,7 @@ loginRouter.post('/login/next/:id', async (req, res) => {
     loginAttemptPublicId,
     credential,
     deviceToken,
+    getAuditContext(req),
   );
 
   switch (result.status) {
@@ -119,7 +122,11 @@ loginRouter.post('/login/next/:id', async (req, res) => {
 });
 
 loginRouter.get('/refresh', requireBearerToken, async (req, res) => {
-  const tokens = await refreshSession(req.bearerToken!, false);
+  const tokens = await refreshSession(
+    req.bearerToken!,
+    false,
+    getAuditContext(req),
+  );
   if (!tokens) {
     res.status(401).json({ error: 'invalid or expired refresh token' });
     return;

@@ -4,7 +4,7 @@ import {
   refreshSession,
   logoutSession,
 } from '../../data/users.js';
-import { requireBearerToken } from '../../middlewares/auth.js';
+import { getAuditContext, requireBearerToken } from '../../middlewares/auth.js';
 
 const sessionRouter = Router();
 
@@ -25,7 +25,11 @@ sessionRouter.get('/me', requireBearerToken, async (req, res) => {
 });
 
 sessionRouter.get('/rotate', requireBearerToken, async (req, res) => {
-  const tokens = await refreshSession(req.bearerToken!, true);
+  const tokens = await refreshSession(
+    req.bearerToken!,
+    true,
+    getAuditContext(req),
+  );
   if (!tokens) {
     res.status(401).json({ error: 'invalid or expired refresh token' });
     return;
@@ -39,7 +43,7 @@ sessionRouter.get('/rotate', requireBearerToken, async (req, res) => {
 });
 
 sessionRouter.post('/logout', requireBearerToken, async (req, res) => {
-  await logoutSession(req.bearerToken!);
+  await logoutSession(req.bearerToken!, getAuditContext(req));
   res.json({});
 });
 

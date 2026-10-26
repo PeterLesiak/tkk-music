@@ -4,6 +4,7 @@ import {
   type IdentityType,
   type SelfInfo,
 } from '../data/users.js';
+import type { AuditContext } from '../data/auditlog.js';
 
 export const extractIdentity = (
   body: Partial<{ username: string; email: string; phone: string }>,
@@ -33,6 +34,11 @@ export const extractBearerToken = (
   }
   return authorisation.slice('Bearer '.length).trim() || null;
 };
+
+export const getAuditContext = (req: Request): AuditContext => ({
+  ip: req.ip,
+  userAgent: req.get('user-agent'),
+});
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

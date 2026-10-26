@@ -12,7 +12,7 @@ dynamicSchedulerRouter.get(
   '/dynamic',
   requireBearerToken,
   requireValidSession,
-  await requirePermission('scheduling.dynamic.view'),
+  requirePermission('scheduling.dynamic.view'),
   async (_req, res) => {
     // TODO: take params from req (query?)
     res.json(await getDynamicSchedule());
