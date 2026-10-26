@@ -18,8 +18,17 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
+  packages/api:
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
   packages/backend:
     dependencies:
+      '@tkk-music/api-client':
+        specifier: workspace:*
+        version: link:../api
       dotenv:
         specifier: ^18.0.5
         version: 18.0.5
@@ -93,6 +102,9 @@ importers:
       '@tanstack/react-start':
         specifier: 1.168.60
         version: 1.168.60(esbuild@0.28.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.12)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      '@tkk-music/api-client':
+        specifier: workspace:*
+        version: link:../api
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

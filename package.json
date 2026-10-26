@@ -6,6 +6,7 @@
     "mobile:dev": "pnpm --filter=@tkk-music/mobile dev",
     "backend:build": "pnpm --filter=@tkk-music/backend build",
     "backend:dev": "pnpm --filter=@tkk-music/backend dev",
+    "api-client:build": "pnpm --filter=@tkk-music/api-client build",
     "format": "prettier . --write"
   },
   "devDependencies": {
