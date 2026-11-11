@@ -29,5 +29,8 @@
     "ListFooterComponentClassName",
     "ListHeaderComponentClassName"
   ],
-  "tailwindCSS.classFunctions": ["useResolveClassNames"]
+  "tailwindCSS.classFunctions": [
+    "useResolveClassNames"
+  ],
+  "js/ts.tsdk.path": "node_modules/typescript"
 }

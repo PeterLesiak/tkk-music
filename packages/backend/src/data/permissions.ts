@@ -1,7 +1,7 @@
 import type { PoolConnection } from 'mariadb';
 import { getPool } from '../data/db.js';
 import assert from 'node:assert';
-import type { MakePath } from '../util/types.js';
+import type { Permission, PermissionCode, Role } from '@tkk-music/api-client';
 
 interface PermissionCategoryDbRecord {
   permission_category_id: number;
@@ -23,47 +23,7 @@ interface RoleDbRecord {
   created_at: Date;
 }
 
-type Role = {
-  id: number;
-  code: string;
-  displayName: string;
-  description?: string | undefined;
-  isSystemRole: boolean;
-  createdAt: Date;
-};
-
 type JointDbRecord = PermissionCategoryDbRecord & PermissionDbRecord;
-type PermissionCategory = {
-  id: number;
-  name: string;
-};
-
-interface PermissionSchema {
-  music: {
-    artists: 'manage';
-    audio_files: 'manage';
-    songs: 'create' | 'delete' | 'edit' | 'view';
-  };
-  permissions: {
-    roles: 'manage';
-  };
-  queue: 'view' | 'manage';
-  scheduling: {
-    static: 'view' | 'manage';
-    dynamic: 'view' | 'manage';
-  };
-  system: {
-    audit_log: 'view';
-  };
-  users: 'manage' | 'view';
-}
-
-export type PermissionCode = MakePath<PermissionSchema>;
-type Permission = {
-  id: number;
-  name: PermissionCode;
-  category: PermissionCategory;
-};
 
 let permissionMapCache: Map<string, Permission> = new Map();
 
@@ -136,6 +96,7 @@ export const getUserRoles = async (
       'select user_roles.role_id, role_code, display_name, description, is_system_role, created_at from user_roles join roles on roles.role_id = user_roles.role_id where user_roles.user_id = (select user_id from users where public_id = UNHEX(?));',
       [publicId],
     );
+
     const roles: Role[] = [];
     for (const row of result) {
       roles.push({

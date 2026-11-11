@@ -1,69 +1,6 @@
 import type { PoolConnection } from 'mariadb';
 import { getPool } from './db.js';
-
-export type AuditActionCode =
-  | 'auth.register'
-  | 'auth.login.start'
-  | 'auth.login.success'
-  | 'auth.login.failure'
-  | 'auth.login.mfa_required'
-  | 'auth.logout'
-  | 'auth.refresh_token_reuse'
-  | 'permission.denied'
-  | 'role.assign'
-  | 'role.revoke'
-  | 'role.permission.grant'
-  | 'role.permission.revoke'
-  | 'schedule.static.create'
-  | 'schedule.static.update'
-  | 'schedule.static.delete';
-
-export type AuditActorCode = 'user' | 'system' | 'admin';
-
-export type AuditContext = {
-  ip?: string | undefined;
-  userAgent?: string | undefined;
-};
-
-export interface AuditEntryInput {
-  action: AuditActionCode;
-  actorType?: AuditActorCode | undefined;
-  actorUserId?: number | null | undefined;
-  targetType?: string | undefined;
-  targetId?: string | number | undefined;
-  success?: boolean | undefined;
-  oldValue?: unknown;
-  newValue?: unknown;
-  ip?: string | undefined;
-  userAgent?: string | undefined;
-}
-
-export type AuditLogEntry = {
-  id: number;
-  action: string;
-  actorType: string;
-  actorUserPublicId: string | null;
-  targetType: string | null;
-  targetId: string | null;
-  success: boolean;
-  oldValue: unknown;
-  newValue: unknown;
-  ip: string | null;
-  userAgent: string | null;
-  createdAt: Date;
-};
-
-export interface AuditLogFilters {
-  actorPublicId?: string | undefined;
-  action?: string | undefined;
-  targetType?: string | undefined;
-  targetId?: string | undefined;
-  success?: boolean | undefined;
-  from?: Date | undefined;
-  to?: Date | undefined;
-  before?: number | undefined;
-  limit?: number | undefined;
-}
+import type { AuditActorCode, AuditEntryInput, AuditLogEntry, AuditLogFilters } from '@tkk-music/api-client';
 
 export const AUDIT_DEFAULT_LIMIT = 50;
 export const AUDIT_MAX_LIMIT = 200;
@@ -197,9 +134,8 @@ export const getAuditLog = async (
     params.push(filters.before);
   }
 
-  const sql = `select audit_log.audit_log_id, audit_actions.action_code, actor_types.actor_type_code, users.public_id as actor_public_id, audit_log.target_type, audit_log.target_id, audit_log.success, audit_log.old_value_json, audit_log.new_value_json, audit_log.ip_address, audit_log.user_agent, audit_log.created_at from audit_log join audit_actions on audit_actions.audit_action_id = audit_log.audit_action_id join actor_types on actor_types.actor_type_id = audit_log.actor_type_id left join users on users.user_id = audit_log.actor_user_id ${
-    where.length ? 'where ' + where.join(' and ') : ''
-  } order by audit_log.audit_log_id desc limit ?;`;
+  const sql = `select audit_log.audit_log_id, audit_actions.action_code, actor_types.actor_type_code, users.public_id as actor_public_id, audit_log.target_type, audit_log.target_id, audit_log.success, audit_log.old_value_json, audit_log.new_value_json, audit_log.ip_address, audit_log.user_agent, audit_log.created_at from audit_log join audit_actions on audit_actions.audit_action_id = audit_log.audit_action_id join actor_types on actor_types.actor_type_id = audit_log.actor_type_id left join users on users.user_id = audit_log.actor_user_id ${where.length ? 'where ' + where.join(' and ') : ''
+    } order by audit_log.audit_log_id desc limit ?;`;
   params.push(limit + 1);
 
   const connection = await getPool().getConnection();
