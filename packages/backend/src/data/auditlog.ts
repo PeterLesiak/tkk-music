@@ -1,6 +1,7 @@
 import type { PoolConnection } from 'mariadb';
 import { getPool } from './db.js';
 import type { AuditActorCode, AuditEntryInput, AuditLogEntry, AuditLogFilters } from '@tkk-music/api-client';
+export type { AuditContext, AuditLogFilters } from '@tkk-music/api-client';
 
 export const AUDIT_DEFAULT_LIMIT = 50;
 export const AUDIT_MAX_LIMIT = 200;

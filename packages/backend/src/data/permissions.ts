@@ -3,6 +3,8 @@ import { getPool } from '../data/db.js';
 import assert from 'node:assert';
 import type { Permission, PermissionCode, Role } from '@tkk-music/api-client';
 
+export type { PermissionCode } from '@tkk-music/api-client';
+
 interface PermissionCategoryDbRecord {
   permission_category_id: number;
   category_code: string;

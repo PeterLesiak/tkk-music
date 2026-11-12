@@ -18,11 +18,15 @@ const loginRouter = Router();
 const serialiseTokens = (tokens: {
   sessionPublicId: string;
   sessionToken: string;
+  refreshToken?: string;
   idleExpiresAt: Date;
   absoluteExpiresAt: Date;
 }) => ({
   sessionId: tokens.sessionPublicId,
   sessionToken: tokens.sessionToken,
+  ...(tokens.refreshToken === undefined
+    ? {}
+    : { refreshToken: tokens.refreshToken }),
   idleExpiresAt: tokens.idleExpiresAt.toISOString(),
   absoluteExpiresAt: tokens.absoluteExpiresAt.toISOString(),
 });

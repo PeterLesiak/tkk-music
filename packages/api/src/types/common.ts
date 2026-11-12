@@ -1,7 +1,7 @@
 export type Join<Key, Path> = Key extends string | number
   ? Path extends string | number
-    ? `${Key}${'' extends Path ? '' : '.'}${Path}`
-    : never
+  ? `${Key}${'' extends Path ? '' : '.'}${Path}`
+  : never
   : never;
 
 export type MakePath<TSchema> = TSchema extends object
